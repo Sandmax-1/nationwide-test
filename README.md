@@ -1,6 +1,6 @@
 # Engineering Coding Challenge
 
-In this challenge you are required to do some analysis on the datasets provided and write unit tests. Integration tests are a bonus but not required. Python should be the language of choice but you are free to use any other language you are familiar with.
+In this challenge you are required to do some analysis on the datasets provided and write unit tests. The preferred languages are Python and SQL, and you are welcome to use any libraries or frameworks you are comfortable with. You are expected to complete parts 1, 2, 3 and 4. Part 5 will be completed during the face to face interview process.
 
 ## Credit Card Vendor Mapping 
 In later parts of this project you will need this mapping of credit_card_vendor to list of card prefix.
@@ -35,6 +35,11 @@ Sanitise the data of both transaction-001.zip and transaction-002.zip by removin
 
 - Going forward, only the sanitised dataset should be used
 - Find in the sanitised dataset if it contains fraudulent transactions (from fraud.zip) and report their number
+
+## Part 5
+
+You are required to prepare your code so that the below tasks can be completed during the face to face interview process.
+
 - Create a report of the number of fraudulent transactions per state
 - Create a report of the number of fraudulent transactions per card vendor, eg: maestro => 45, amex => 78, etc..
 - Create a report of the number of fraudulent transactions per card vendor, eg: maestro => 45, amex => 78, etc..
