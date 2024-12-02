@@ -19,29 +19,27 @@ jcb15 = ['2131', '1800']
 
 ## Part 1
 
-Setup a git project that you can push to Github or other provider of your choice. We would like to see clean code and a well structured project using a framework of your choice. You will also need to provide a working set of functions or function, that we can execute to reproduce your results.  
+Setup a git project that you can push to Github or other provider of your choice. We would like to see clean code and a well structured project using a framework of your choice. You will also need to provide a working set of functions or function, that we can execute to reproduce your results. Optionally, add unit tests to your code. 
 
 ## Part 2
 
-Read fraud.zip and store the data into an SQL database.
+Read fraud.zip and store the data into a data structure of your choice or even a local SQL database if you prefer.
 
 ## Part 3
 
-Sanitise the data of both transaction-001.zip and transaction-002.zip by removing transactions where column `credit_card_number` is not part of the previous provided list.
+Sanitise the data of both transaction-001.zip and transaction-002.zip by removing transactions where column `credit_card_number` is not part of the previous provided list. Going forward, only the sanitised dataset should be used.
 
 **Example**: a credit card that starts with `98` is not a valid card, it should be discarded from the sanitised dataset.
  
 ## Part 4
 
-- Going forward, only the sanitised dataset should be used
-- Find in the sanitised dataset if it contains fraudulent transactions (from fraud.zip) and report their number
+Find in the sanitised dataset if it contains fraudulent transactions (from fraud.zip) and report their number
 
 ## Part 5
 
-You are required to prepare your code so that the below tasks can be completed during the face to face interview process.
+You are required to prepare your code so that the below tasks can be completed during the face to face interview process:
 
 - Create a report of the number of fraudulent transactions per state
-- Create a report of the number of fraudulent transactions per card vendor, eg: maestro => 45, amex => 78, etc..
 - Create a report of the number of fraudulent transactions per card vendor, eg: maestro => 45, amex => 78, etc..
 - Create a dataset of 3 columns and save in both JSON and in a binary file format that you believe it's suitable for BI analysis:
   - column 1: masked credit card: replace 9 last digits of the credit card with `*`
