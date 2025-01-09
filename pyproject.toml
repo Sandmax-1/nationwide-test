@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nationwide_test"
+version = "0.0.1"
+
+requires-python = ">= 3.12"
+maintainers = [
+  {name = "Max Sandman", email = "m.sandman@hotmail.co.uk"}
+]
+description = "Nationwide test"
+dependencies = [
+  "polars==1.19.0"
+]
+
+[project.optional-dependencies]
+# development dependency groups
+dev = [
+    "pre-commit>=3.8.0",
+    "pytest>=8.3.2",
+    "pytest-cov>=5.0.0",
+]
+
+[tool.isort]
+profile = "black"
