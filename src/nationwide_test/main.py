@@ -127,7 +127,7 @@ def extract_zip_files(
     return (fraudulent_transactions, validated_transactions_df)
 
 
-if __name__ == "__main__":
+def main() -> None:
     fraudulent_transactions, all_transactions = extract_zip_files()
     print(fraudulent_transactions.shape, all_transactions.shape)
-    # fraudulent_transactions.write_csv(Path.cwd() / "fraudulent_transactions.csv")
+    fraudulent_transactions.write_csv(Path.cwd() / "fraudulent_transactions.csv")

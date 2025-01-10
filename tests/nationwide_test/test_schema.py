@@ -24,9 +24,9 @@ def test_Trie_search() -> None:
     for ind in range(len(words)):
         trie.add(words[ind], vendors[ind])
 
-    assert trie.search("a") is None
-    assert trie.search("") is None
-    assert trie.search("c") is None
+    assert trie.search("a") == ""
+    assert trie.search("") == ""
+    assert trie.search("c") == ""
     assert trie.search("abcd") == "v2"
     assert trie.search("abc") == "v2"
     assert trie.search("def") == "v3"

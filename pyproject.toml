@@ -12,8 +12,12 @@ maintainers = [
 ]
 description = "Nationwide test"
 dependencies = [
-  "polars==1.19.0"
+  "polars==1.19.0",
+  "pandera[polars]==0.22.1"
 ]
+
+[project.scripts]
+extract-data = "nationwide_test.main:main"
 
 [project.optional-dependencies]
 # development dependency groups
