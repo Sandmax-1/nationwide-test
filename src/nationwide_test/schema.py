@@ -4,6 +4,7 @@ from itertools import chain
 import pandera.polars as pa
 
 VALID_CREDIT_CARD_PREFIXES_MAPPING = {
+    # Not sure what I am supposed to be doing with the # and %'s?
     "maestro": ["5018", "5020", "5038", "56##"],
     "mastercard": ["51", "52", "54", "55", "222%"],
     "visa": ["4"],

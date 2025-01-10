@@ -113,13 +113,21 @@ def extract_zip_files(
 
         transactions_df = pl.concat([transactions_1_df, transactions_2_df])
 
-    return (
-        FRAUD_SCHEMA.validate(fraud_df),
-        TRANSACTION_SCHEMA.validate(transactions_df),
-    )
+        # pandera still janky with types annoyingly, so formally cast here
+        validated_fraud_df: pl.DataFrame = FRAUD_SCHEMA.validate(fraud_df)
+        validated_transactions_df: pl.DataFrame = TRANSACTION_SCHEMA.validate(
+            transactions_df
+        )
+
+        fraudulent_transactions = validated_transactions_df.join(
+            validated_fraud_df, on=["credit_card_number", "ipv4"]
+        )
+        # print(fraudulent_transactions.head())
+
+    return (fraudulent_transactions, validated_transactions_df)
 
 
 if __name__ == "__main__":
-    fraud_df, transactions_df = extract_zip_files()
-    print(transactions_df.unique(pl.col("vendor")))
-    transactions_df.write_csv(Path.cwd() / "santised_data.csv")
+    fraudulent_transactions, all_transactions = extract_zip_files()
+    print(fraudulent_transactions.shape, all_transactions.shape)
+    # fraudulent_transactions.write_csv(Path.cwd() / "fraudulent_transactions.csv")
