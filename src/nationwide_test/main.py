@@ -31,7 +31,7 @@ def process_transactions(
         )
         .with_columns(
             vendor=pl.col("credit_card_number")
-            .str.slice(0, 3)
+            .str.slice(0, 4)
             .map_elements(prefix_trie.search, return_dtype=pl.String)
         )
         .filter(pl.col("vendor") != "")
@@ -72,7 +72,7 @@ def preprocess_fraud_csv(directory_path: Path) -> None:
 
 def extract_zip_files(
     data_path: Path = ZIPPED_DATA_PATH,
-) -> tuple[FRAUD_SCHEMA, TRANSACTION_SCHEMA]:
+) -> tuple[pl.DataFrame, pl.DataFrame,]:
     """
     Extracts and processes fraud and transaction data from ZIP files.
 
@@ -121,6 +121,5 @@ def extract_zip_files(
 
 if __name__ == "__main__":
     fraud_df, transactions_df = extract_zip_files()
-
-    print(fraud_df.describe())
-    print(transactions_df.describe())
+    print(transactions_df.unique(pl.col("vendor")))
+    transactions_df.write_csv(Path.cwd() / "santised_data.csv")
