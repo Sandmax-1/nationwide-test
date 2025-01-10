@@ -88,8 +88,8 @@ class Trie:
 # I make this a trie as it has very good look up for differnet lengths of strings.
 # Alternatively I could have just flattened the reversed
 # VALID_CREDIT_CARD_PREFIXES_MAPPING and looked for each of the prefix lengths 1:4
-# in this flattened mapping. I probably don't gain much of a speed benefit as the
-# amount of data is very small, but I wanted to challenge myself.
+# in this flattened mapping. I probably don't gain much of a speed benefit using
+# a trie as the amount of data is very small, but I wanted to challenge myself.
 PREFIX_TRIE = Trie()
 
 for vendor, prefixes in VALID_CREDIT_CARD_PREFIXES_MAPPING.items():
