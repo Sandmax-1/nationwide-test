@@ -5,7 +5,7 @@ from zipfile import ZipFile
 import polars as pl
 
 from nationwide_test.config import ZIPPED_DATA_PATH
-from nationwide_test.schema import FRAUD_SCHEMA, PREFIX_TRIE, TRANSACTION_SCHEMA, Trie
+from nationwide_test.schema import PREFIX_TRIE, TRANSACTION_SCHEMA, Trie
 
 
 def process_transactions(
@@ -72,7 +72,7 @@ def preprocess_fraud_csv(directory_path: Path) -> None:
 
 def extract_zip_files(
     data_path: Path = ZIPPED_DATA_PATH,
-) -> tuple[pl.DataFrame, pl.DataFrame,]:
+) -> pl.DataFrame:
     """
     Extracts and processes fraud and transaction data from ZIP files.
 
@@ -82,8 +82,8 @@ def extract_zip_files(
 
     Returns:
         tuple[pl.DataFrame, pl.DataFrame]: A tuple containing:
-            - A validated DataFrame for fraudulant transactions.
-            - A validated DataFrame for all transactions.
+            - A validated DataFrame of all transactions with an is_fraudulent
+              column added.
     """
     with TemporaryDirectory() as tmp:
         tmp_folder_path = Path(tmp)
@@ -102,7 +102,7 @@ def extract_zip_files(
             tmp_folder_path / "fraud" / "preprocessed.csv",
             has_header=True,
             schema_overrides={"credit_card_number": str},
-        )
+        ).with_columns(pl.col("state").fill_null(value="NO_STATE"))
         transactions_1_df = process_transactions(
             tmp_folder_path / "t1" / "transaction-001"
         )
@@ -114,16 +114,23 @@ def extract_zip_files(
         transactions_df = pl.concat([transactions_1_df, transactions_2_df])
 
         # pandera still janky with types annoyingly, so formally cast here
-        validated_fraud_df: pl.DataFrame = FRAUD_SCHEMA.validate(fraud_df)
-        validated_transactions_df: pl.DataFrame = TRANSACTION_SCHEMA.validate(
-            transactions_df
+        # validated_fraud_df: pl.DataFrame = FRAUD_SCHEMA.validate(fraud_df)
+        # validated_transactions_df: pl.DataFrame = TRANSACTION_SCHEMA.validate(
+        #     transactions_df
+        # )
+
+        fraudulent_transactions = transactions_df.join(
+            fraud_df, on=["credit_card_number", "ipv4"], how="left"
+        ).select(
+            pl.col("credit_card_number"),
+            pl.col("ipv4"),
+            pl.col("state"),
+            pl.col("vendor"),
+            (~pl.col("state_right").is_null()).alias("is_fraudulent"),
+            pl.col("state_right").alias("fraudulent_state"),
         )
 
-        fraudulent_transactions = validated_transactions_df.join(
-            validated_fraud_df, on=["credit_card_number", "ipv4"]
-        )
-
-    return (fraudulent_transactions, validated_transactions_df)
+    return TRANSACTION_SCHEMA.validate(fraudulent_transactions)
 
 
 def perform_group_by_count(
@@ -139,7 +146,13 @@ def perform_group_by_count(
 
 
 def main() -> None:
-    fraudulent_transactions, _ = extract_zip_files()
+    all_transactions = extract_zip_files()
+    fraudulent_transactions = all_transactions.filter(pl.col("is_fraudulent"))
+
+    print(
+        f"""Here is a snippet of the full transactions dataset:
+            {all_transactions.head()}"""
+    )
     print(
         f"""Total number of fraudulent transactions is:
             {fraudulent_transactions.shape[0]}\n"""
