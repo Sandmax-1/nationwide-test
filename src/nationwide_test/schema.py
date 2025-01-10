@@ -19,6 +19,16 @@ VALID_CREDIT_CARD_PREFIXES = chain(*VALID_CREDIT_CARD_PREFIXES_MAPPING.values())
 
 
 class TrieNode:
+    """
+    Represents a single node in the Trie data structure.
+
+    Attributes:
+        children (dict[str, TrieNode]): Dictionary mapping characters
+                                        to child TrieNode objects.
+        is_end (bool): Indicates whether this node marks the end of a prefix.
+        vendor (str): Vendor associated with the prefix that ends at this node.
+    """
+
     def __init__(self) -> None:
         self.children: dict[str, "TrieNode"] = {}
         self.is_end: bool = False
@@ -26,10 +36,23 @@ class TrieNode:
 
 
 class Trie:
+    """
+    Trie data structure for storing and searching prefixes.
+
+    Attributes:
+        root (TrieNode): The root node of the Trie.
+    """
+
     def __init__(self) -> None:
         self.root = TrieNode()
 
     def add(self, word: str, vendor: str) -> None:
+        """Adds a word and its associated vendor to the Trie.
+
+        Args:
+            word (str): The word (or prefix) to be added to the Trie.
+            vendor (str): The vendor associated with the word.
+        """
         node = self.root
         for char in word:
             if char not in node.children:
@@ -41,6 +64,15 @@ class Trie:
         node.vendor = vendor
 
     def search(self, word: str) -> str:
+        """
+        Searches for a word in the Trie and returns its associated vendor.
+
+        Args:
+            word (str): The word (or prefix) to search for.
+
+        Returns:
+            str: The associated vendor if the word is found; otherwise, an empty string.
+        """
         node = self.root
         for char in word:
             if char in node.children:
@@ -64,6 +96,16 @@ for vendor, prefixes in VALID_CREDIT_CARD_PREFIXES_MAPPING.items():
 
 # mypy and pandera don't play too nicely together yet unfortunately :(
 class FRAUD_SCHEMA(pa.DataFrameModel):  # type: ignore
+    """
+    Schema for fraud-related data validation using pandera.
+
+    Attributes:
+        credit_card_number (int): A positive integer representing
+                                  the credit card number.
+        ipv4 (str): A string representing a valid IPv4 address.
+        state (str): A two-character string representing a state (nullable).
+    """
+
     credit_card_number: int = pa.Field(gt=0, coerce=True)
     ipv4: str
     state: str = pa.Field(str_length=2, nullable=True)
@@ -79,6 +121,14 @@ class FRAUD_SCHEMA(pa.DataFrameModel):  # type: ignore
 
 
 class TRANSACTION_SCHEMA(FRAUD_SCHEMA):
+    """
+    Schema for transaction data validation using pandera.
+
+    Attributes:
+        vendor (str): A non-null string representing the vendor.
+                      Must be one of the valid vendor keys.
+    """
+
     vendor: str = pa.Field(
         nullable=False, isin=list(VALID_CREDIT_CARD_PREFIXES_MAPPING.keys())
     )

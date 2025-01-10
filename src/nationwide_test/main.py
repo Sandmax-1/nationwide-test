@@ -11,6 +11,18 @@ from nationwide_test.schema import FRAUD_SCHEMA, PREFIX_TRIE, TRANSACTION_SCHEMA
 def process_transactions(
     file_path: Path, prefix_trie: Trie = PREFIX_TRIE
 ) -> pl.DataFrame:
+    """
+    Processes a transaction file by adding vendor information
+    and filtering invalid entries.
+
+    Args:
+        file_path (Path): The path to the transaction CSV file.
+        prefix_trie (Trie, optional): A Trie used to map credit card prefixes
+                                      to vendors.Defaults to PREFIX_TRIE.
+
+    Returns:
+        pl.DataFrame: The processed DataFrame with a 'vendor' column and filtered rows.
+    """
     return (
         pl.read_csv(
             file_path,
@@ -26,9 +38,53 @@ def process_transactions(
     )
 
 
+def preprocess_fraud_csv(directory_path: Path) -> None:
+    """
+    Preprocesses the raw fraud CSV file
+    by fixing the shcema at the top of the file (state isn't included).
+    Then adding in the missing commas at the ends of the lines to accomodate
+    the state column when the value is missing.
+
+    Args:
+        directory_path (Path): The directory containing the raw fraud CSV file.
+    """
+    with (
+        open(Path(directory_path) / "fraud" / "fraud", "r") as raw,
+        open(Path(directory_path) / "fraud" / "preprocessed.csv", "a") as preprocessed,
+    ):
+        line_iterator = raw.readlines()
+        header = line_iterator[0]
+
+        header = header.strip() + ",state\n"
+        preprocessed.write(header)
+
+        for line in line_iterator[1:]:
+            line = line.strip()
+
+            # Need to add in comma to fill in missing column with null
+            if line[-1].isdigit():
+                line += ","
+
+            line += "\n"
+
+            preprocessed.write(line)
+
+
 def extract_zip_files(
     data_path: Path = ZIPPED_DATA_PATH,
-) -> tuple[TRANSACTION_SCHEMA, TRANSACTION_SCHEMA, TRANSACTION_SCHEMA]:
+) -> tuple[FRAUD_SCHEMA, TRANSACTION_SCHEMA]:
+    """
+    Extracts and processes fraud and transaction data from ZIP files.
+
+    Args:
+        data_path (Path): The directory containing the ZIP files.
+                          Defaults to ZIPPED_DATA_PATH.
+
+    Returns:
+        tuple[pl.DataFrame, pl.DataFrame]: A tuple containing:
+            - A validated DataFrame for fraud data.
+            - A validated DataFrame for transaction data.
+    """
     with TemporaryDirectory() as tmp:
         tmp_folder_path = Path(tmp)
 
@@ -55,39 +111,16 @@ def extract_zip_files(
             tmp_folder_path / "t2" / "transaction-002"
         )
 
+        transactions_df = pl.concat([transactions_1_df, transactions_2_df])
+
     return (
         FRAUD_SCHEMA.validate(fraud_df),
-        TRANSACTION_SCHEMA.validate(transactions_1_df),
-        TRANSACTION_SCHEMA.validate(transactions_2_df),
+        TRANSACTION_SCHEMA.validate(transactions_df),
     )
 
 
-def preprocess_fraud_csv(directory_path: Path) -> None:
-    with (
-        open(Path(directory_path) / "fraud" / "fraud", "r") as raw,
-        open(Path(directory_path) / "fraud" / "preprocessed.csv", "a") as preprocessed,
-    ):
-        line_iterator = raw.readlines()
-        header = line_iterator[0]
-
-        header = header.strip() + ",state\n"
-        preprocessed.write(header)
-
-        for line in line_iterator[1:]:
-            line = line.strip()
-
-            # Need to add in comma to fill in missing column with null
-            if line[-1].isdigit():
-                line += ","
-
-            line += "\n"
-
-            preprocessed.write(line)
-
-
 if __name__ == "__main__":
-    fraud_df, transactions_1_df, transactions_2_df = extract_zip_files()
+    fraud_df, transactions_df = extract_zip_files()
 
-    print(fraud_df.head())
-    print(transactions_1_df.head())
-    print(transactions_2_df.head())
+    print(fraud_df.describe())
+    print(transactions_df.describe())
