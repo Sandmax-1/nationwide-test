@@ -2,18 +2,39 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from zipfile import ZipFile
 
-from polars import DataFrame, read_csv
+import polars as pl
 
 from nationwide_test.config import ZIPPED_DATA_PATH
+from nationwide_test.schema import FRAUD_SCHEMA, PREFIX_TRIE, TRANSACTION_SCHEMA, Trie
 
 
-def extract_zip_files() -> tuple[DataFrame, DataFrame, DataFrame]:
+def process_transactions(
+    file_path: Path, prefix_trie: Trie = PREFIX_TRIE
+) -> pl.DataFrame:
+    return (
+        pl.read_csv(
+            file_path,
+            has_header=True,
+            schema_overrides={"credit_card_number": str},
+        )
+        .with_columns(
+            vendor=pl.col("credit_card_number")
+            .str.slice(0, 3)
+            .map_elements(prefix_trie.search, return_dtype=pl.String)
+        )
+        .filter(pl.col("vendor") != "")
+    )
+
+
+def extract_zip_files(
+    data_path: Path = ZIPPED_DATA_PATH,
+) -> tuple[TRANSACTION_SCHEMA, TRANSACTION_SCHEMA, TRANSACTION_SCHEMA]:
     with TemporaryDirectory() as tmp:
         tmp_folder_path = Path(tmp)
 
-        fraud = ZipFile(ZIPPED_DATA_PATH / "fraud.zip")
-        transactions_1 = ZipFile(ZIPPED_DATA_PATH / "transaction-001.zip")
-        transactions_2 = ZipFile(ZIPPED_DATA_PATH / "transaction-002.zip")
+        fraud = ZipFile(data_path / "fraud.zip")
+        transactions_1 = ZipFile(data_path / "transaction-001.zip")
+        transactions_2 = ZipFile(data_path / "transaction-002.zip")
 
         fraud.extractall(tmp_folder_path / "fraud")
         transactions_1.extractall(tmp_folder_path / "t1")
@@ -21,20 +42,24 @@ def extract_zip_files() -> tuple[DataFrame, DataFrame, DataFrame]:
 
         preprocess_fraud_csv(tmp_folder_path)
 
-        fraud_df = read_csv(
+        fraud_df = pl.read_csv(
             tmp_folder_path / "fraud" / "preprocessed.csv",
             has_header=True,
+            schema_overrides={"credit_card_number": str},
         )
-        transactions_1_df = read_csv(
-            tmp_folder_path / "t1" / "transaction-001",
-            has_header=True,
-        )
-        transactions_2_df = read_csv(
-            tmp_folder_path / "t2" / "transaction-002",
-            has_header=True,
+        transactions_1_df = process_transactions(
+            tmp_folder_path / "t1" / "transaction-001"
         )
 
-    return fraud_df, transactions_1_df, transactions_2_df
+        transactions_2_df = process_transactions(
+            tmp_folder_path / "t2" / "transaction-002"
+        )
+
+    return (
+        FRAUD_SCHEMA.validate(fraud_df),
+        TRANSACTION_SCHEMA.validate(transactions_1_df),
+        TRANSACTION_SCHEMA.validate(transactions_2_df),
+    )
 
 
 def preprocess_fraud_csv(directory_path: Path) -> None:
@@ -61,4 +86,8 @@ def preprocess_fraud_csv(directory_path: Path) -> None:
 
 
 if __name__ == "__main__":
-    extract_zip_files()
+    fraud_df, transactions_1_df, transactions_2_df = extract_zip_files()
+
+    print(fraud_df.head())
+    print(transactions_1_df.head())
+    print(transactions_2_df.head())
