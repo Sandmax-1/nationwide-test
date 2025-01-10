@@ -85,13 +85,15 @@ class Trie:
         return ""
 
 
+# I make this a trie as it has very good look up for differnet lengths of strings.
+# Alternatively I could have just flattened the reversed
+# VALID_CREDIT_CARD_PREFIXES_MAPPING and looked for each of the prefix lengths 1:4
+# in this flattened mapping. I probably don't gain much of a speed benefit as the
+# amount of data is very small, but I wanted to challenge myself.
 PREFIX_TRIE = Trie()
-
-PREFIX_TO_VENDOR_MAPPING: dict[str, str] = {}
 
 for vendor, prefixes in VALID_CREDIT_CARD_PREFIXES_MAPPING.items():
     for prefix in prefixes:
-        PREFIX_TO_VENDOR_MAPPING[prefix] = vendor
         PREFIX_TRIE.add(prefix, vendor)
 
 
