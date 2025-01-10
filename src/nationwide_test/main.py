@@ -164,6 +164,11 @@ def main() -> None:
             {all_transactions.head()}"""
     )
 
+    print(
+        f"""Total number of fraudulent transactions is:
+            {fraudulent_transactions.shape[0]}\n"""
+    )
+
 
 if __name__ == "__main__":
     main()
