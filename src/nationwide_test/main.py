@@ -129,15 +129,29 @@ def extract_zip_files(
 def perform_group_by_count(
     fraudulent_transactions: pl.DataFrame, col_to_groupby: str
 ) -> pl.DataFrame:
-    return fraudulent_transactions.group_by(pl.col(col_to_groupby)).agg(
-        pl.len().alias("count"),
+    return (
+        fraudulent_transactions.group_by(pl.col(col_to_groupby))
+        .agg(
+            pl.len().alias("count"),
+        )
+        .sort("count", descending=True)
     )
 
 
 def main() -> None:
     fraudulent_transactions, _ = extract_zip_files()
-    print(perform_group_by_count(fraudulent_transactions, "state"))
-    print(perform_group_by_count(fraudulent_transactions, "vendor"))
+    print(
+        f"""Total number of fraudulent transactions is:
+            {fraudulent_transactions.shape[0]}\n"""
+    )
+    print(
+        f"""These are the counts of the fraudulent transactions by state:
+            {perform_group_by_count(fraudulent_transactions, "state")}"""
+    )
+    print(
+        f"""These are the counts of the fraudulent transactions by vendor:
+            {perform_group_by_count(fraudulent_transactions, "vendor")}"""
+    )
     # fraudulent_transactions.write_csv(Path.cwd() / "fraudulent_transactions.csv")
 
 
