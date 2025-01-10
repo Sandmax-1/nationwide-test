@@ -82,8 +82,8 @@ def extract_zip_files(
 
     Returns:
         tuple[pl.DataFrame, pl.DataFrame]: A tuple containing:
-            - A validated DataFrame for fraud data.
-            - A validated DataFrame for transaction data.
+            - A validated DataFrame for fraudulant transactions.
+            - A validated DataFrame for all transactions.
     """
     with TemporaryDirectory() as tmp:
         tmp_folder_path = Path(tmp)
@@ -122,12 +122,24 @@ def extract_zip_files(
         fraudulent_transactions = validated_transactions_df.join(
             validated_fraud_df, on=["credit_card_number", "ipv4"]
         )
-        # print(fraudulent_transactions.head())
 
     return (fraudulent_transactions, validated_transactions_df)
 
 
+def perform_group_by_count(
+    fraudulent_transactions: pl.DataFrame, col_to_groupby: str
+) -> pl.DataFrame:
+    return fraudulent_transactions.group_by(pl.col(col_to_groupby)).agg(
+        pl.len().alias("count"),
+    )
+
+
 def main() -> None:
-    fraudulent_transactions, all_transactions = extract_zip_files()
-    print(fraudulent_transactions.shape, all_transactions.shape)
-    fraudulent_transactions.write_csv(Path.cwd() / "fraudulent_transactions.csv")
+    fraudulent_transactions, _ = extract_zip_files()
+    print(perform_group_by_count(fraudulent_transactions, "state"))
+    print(perform_group_by_count(fraudulent_transactions, "vendor"))
+    # fraudulent_transactions.write_csv(Path.cwd() / "fraudulent_transactions.csv")
+
+
+if __name__ == "__main__":
+    main()
