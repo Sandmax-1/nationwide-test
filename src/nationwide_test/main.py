@@ -130,33 +130,6 @@ def extract_zip_files(
     return TRANSACTION_SCHEMA.validate(fraudulent_transactions)
 
 
-def perform_group_by_count(df: pl.DataFrame, col_to_groupby: str) -> pl.DataFrame:
-    """
-    Groups a Polars DataFrame by a specified column, counts the occurrences in each
-    group, and returns the results sorted in descending order of the counts.
-
-    Args:
-        df (pl.DataFrame):
-            The Polars DataFrame to be grouped.
-        col_to_groupby (str):
-            The name of the column to group by.
-
-    Returns:
-        pl.DataFrame:
-            A new DataFrame with two columns:
-            - The grouping column, containing unique values from the specified column.
-            - A "count" column, containing the number of occurrences for each group,
-              sorted in descending order.
-    """
-    return (
-        df.group_by(pl.col(col_to_groupby))
-        .agg(
-            pl.len().alias("count"),
-        )
-        .sort("count", descending=True)
-    )
-
-
 def main() -> None:
     all_transactions = extract_zip_files()
     fraudulent_transactions = all_transactions.filter(pl.col("is_fraudulent"))  # noqa

@@ -1,5 +1,7 @@
 from itertools import chain
 
+import polars as pl
+
 VALID_CREDIT_CARD_PREFIXES_MAPPING = {
     # Not sure what I am supposed to be doing with the # and %'s?
     "maestro": ["5018", "5020", "5038", "56##"],
@@ -92,3 +94,30 @@ PREFIX_TRIE = Trie()
 for vendor, prefixes in VALID_CREDIT_CARD_PREFIXES_MAPPING.items():
     for prefix in prefixes:
         PREFIX_TRIE.add(prefix, vendor)
+
+
+def perform_group_by_count(df: pl.DataFrame, col_to_groupby: str) -> pl.DataFrame:
+    """
+    Groups a Polars DataFrame by a specified column, counts the occurrences in each
+    group, and returns the results sorted in descending order of the counts.
+
+    Args:
+        df (pl.DataFrame):
+            The Polars DataFrame to be grouped.
+        col_to_groupby (str):
+            The name of the column to group by.
+
+    Returns:
+        pl.DataFrame:
+            A new DataFrame with two columns:
+            - The grouping column, containing unique values from the specified column.
+            - A "count" column, containing the number of occurrences for each group,
+              sorted in descending order.
+    """
+    return (
+        df.group_by(pl.col(col_to_groupby))
+        .agg(
+            pl.len().alias("count"),
+        )
+        .sort("count", descending=True)
+    )
