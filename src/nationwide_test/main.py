@@ -99,11 +99,13 @@ def extract_zip_files(
 
         preprocess_fraud_csv(tmp_folder_path)
 
+        # Fill missing state values with NO_STATE for use when merging later.
         fraud_df = pl.read_csv(
             tmp_folder_path / "fraud" / "preprocessed.csv",
             has_header=True,
             schema_overrides={"credit_card_number": str},
         ).with_columns(pl.col("state").fill_null(value="NO_STATE"))
+
         transactions_1_df = process_transactions(
             tmp_folder_path / "t1" / "transaction-001"
         )

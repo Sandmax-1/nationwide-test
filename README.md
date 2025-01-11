@@ -1,3 +1,19 @@
+# How to install: 
+
+cd to the base repo, optionally create and activate a venv for your project. Then run 
+
+pip install .
+
+After this you should be able to run the code just be executing: 
+
+extract-data 
+
+On the command line. 
+
+If you are going to be making edits, or running tests instead run in an editable install and install the dev dependencies: 
+
+pip install -e .[dev]
+
 # Engineering Coding Challenge
 
 In this challenge you are required to do some analysis on the datasets provided and write unit tests. The preferred languages are Python and SQL, and you are welcome to use any libraries or frameworks you are comfortable with. You are expected to complete parts 1, 2, 3 and 4 at home. Part 5 will be completed during the face to face interview process.
