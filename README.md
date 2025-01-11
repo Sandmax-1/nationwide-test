@@ -16,7 +16,7 @@ On the command line.
 
 If you are going to be making edits, or running tests instead run in an editable install and install the dev dependencies: 
 
-console```
+```console
 pip install -e .[dev]
 ```
 
