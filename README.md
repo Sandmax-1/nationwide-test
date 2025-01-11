@@ -2,17 +2,23 @@
 
 cd to the base repo, optionally create and activate a venv for your project. Then run 
 
+```console
 pip install .
+```
 
 After this you should be able to run the code just be executing: 
 
+```console
 extract-data 
+```
 
 On the command line. 
 
 If you are going to be making edits, or running tests instead run in an editable install and install the dev dependencies: 
 
+console```
 pip install -e .[dev]
+```
 
 # Engineering Coding Challenge
 
